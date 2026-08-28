@@ -13,8 +13,7 @@ rg -F 'sha256sum --check --strict' "$dockerfile" >/dev/null
 rg -F 'python3.11' "$dockerfile" >/dev/null
 rg -F 'postgresql16-16.11-1PGDG.rhel8.x86_64.rpm' "$dockerfile" >/dev/null
 rg -F '702e8c47e8ff4ae09c90ce4b22d96497c5b8a2b07090478601e2f92dc2abef8e' "$dockerfile" >/dev/null
-rg -F 'postgresql16-devel-16.11-1PGDG.rhel8.x86_64.rpm' "$dockerfile" >/dev/null
-rg -F 'ff3e89776b23f93d9c98810858a1c73ced25ffa463033b11c25fd37af751e164' "$dockerfile" >/dev/null
+if rg -F 'postgresql16-devel' "$dockerfile"; then exit 1; fi
 rg -F 'postgresql16-libs-16.11-1PGDG.rhel8.x86_64.rpm' "$dockerfile" >/dev/null
 rg -F '277df243b56f513ba310808c33e18444368bea3f427ab55297c16b5d86895994' "$dockerfile" >/dev/null
 rg -F 'postgresql16-server-16.11-1PGDG.rhel8.x86_64.rpm' "$dockerfile" >/dev/null

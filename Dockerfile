@@ -34,13 +34,13 @@ RUN dnf install --assumeyes --setopt=install_weak_deps=False \
       util-linux \
       xz \
       zip \
-    && mkdir -p /tmp/rpms \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf
+
+RUN mkdir -p /tmp/rpms \
     && curl --fail --location --retry 3 --silent --show-error \
       "${PG_BASE_URL}/postgresql16-${PG_VERSION}.x86_64.rpm" \
       -o "/tmp/rpms/postgresql16-${PG_VERSION}.x86_64.rpm" \
-    && curl --fail --location --retry 3 --silent --show-error \
-      "${PG_BASE_URL}/postgresql16-devel-${PG_VERSION}.x86_64.rpm" \
-      -o "/tmp/rpms/postgresql16-devel-${PG_VERSION}.x86_64.rpm" \
     && curl --fail --location --retry 3 --silent --show-error \
       "${PG_BASE_URL}/postgresql16-libs-${PG_VERSION}.x86_64.rpm" \
       -o "/tmp/rpms/postgresql16-libs-${PG_VERSION}.x86_64.rpm" \
@@ -52,7 +52,6 @@ RUN dnf install --assumeyes --setopt=install_weak_deps=False \
       -o "/tmp/rpms/redis-${REDIS_VERSION}.x86_64.rpm" \
     && printf '%s\n' \
       '702e8c47e8ff4ae09c90ce4b22d96497c5b8a2b07090478601e2f92dc2abef8e  /tmp/rpms/postgresql16-16.11-1PGDG.rhel8.x86_64.rpm' \
-      'ff3e89776b23f93d9c98810858a1c73ced25ffa463033b11c25fd37af751e164  /tmp/rpms/postgresql16-devel-16.11-1PGDG.rhel8.x86_64.rpm' \
       '277df243b56f513ba310808c33e18444368bea3f427ab55297c16b5d86895994  /tmp/rpms/postgresql16-libs-16.11-1PGDG.rhel8.x86_64.rpm' \
       'ae13813d3b4d72b258eb43148eec6a054d20df12d2cf80786eabfc7160c02f56  /tmp/rpms/postgresql16-server-16.11-1PGDG.rhel8.x86_64.rpm' \
       '876cde6ff039dd5c41883fb159dff201fbea1312dedc745cc562e8d0f2a7d95f  /tmp/rpms/redis-7.2.16-1.module_redis.7.2.el8.remi.x86_64.rpm' \
