@@ -7,6 +7,8 @@ workflow="$repo_root/.github/workflows/build.yml"
 
 rg -F 'FROM ${ALINUX_BASE_IMAGE}' "$dockerfile" >/dev/null
 rg -F 'ARG UV_VERSION=0.10.7' "$dockerfile" >/dev/null
+rg -F 'PIP_INDEX_URL="https://mirrors.aliyun.com/pypi/simple"' "$dockerfile" >/dev/null
+rg -F 'UV_DEFAULT_INDEX="https://mirrors.aliyun.com/pypi/simple"' "$dockerfile" >/dev/null
 rg -F 'ARG UV_SHA256=89de2504407dcf04aece914c6ca3b9d8e60cf9ff39a13031c1df1f7c040cea81' "$dockerfile" >/dev/null
 rg -F 'uv-0.10.7-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl' "$dockerfile" >/dev/null
 rg -F 'sha256sum --check --strict' "$dockerfile" >/dev/null

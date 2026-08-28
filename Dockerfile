@@ -4,7 +4,9 @@ FROM ${ALINUX_BASE_IMAGE}
 LABEL org.opencontainers.image.source="https://github.com/lilch/cvfast-ci-runner"
 LABEL org.opencontainers.image.description="Public reproducible CVFast CI toolchain; no application code or secrets"
 
-ENV PATH="/usr/pgsql-16/bin:${PATH}"
+ENV PATH="/usr/pgsql-16/bin:${PATH}" \
+    PIP_INDEX_URL="https://mirrors.aliyun.com/pypi/simple" \
+    UV_DEFAULT_INDEX="https://mirrors.aliyun.com/pypi/simple"
 
 ARG UV_VERSION=0.10.7
 ARG UV_SHA256=89de2504407dcf04aece914c6ca3b9d8e60cf9ff39a13031c1df1f7c040cea81
