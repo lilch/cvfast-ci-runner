@@ -3,6 +3,7 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 dockerfile="$repo_root/Dockerfile"
+light_dockerfile="$repo_root/Dockerfile.light"
 workflow="$repo_root/.github/workflows/build.yml"
 
 rg -F 'FROM ${ALINUX_BASE_IMAGE}' "$dockerfile" >/dev/null
@@ -32,6 +33,16 @@ rg -F 'postgres --version | grep -Fx "postgres (PostgreSQL) 16.11"' "$dockerfile
 rg -F 'redis-server --version | grep -F "v=7.2.16"' "$dockerfile" >/dev/null
 if rg -n '^(COPY|ADD)[[:space:]]|astral\.sh/.*/install\.sh|[|][[:space:]]*sh([[:space:]]|$)|uv python install|python3\.10|nodejs' "$dockerfile"; then exit 1; fi
 
+rg -F 'FROM ${ALINUX_BASE_IMAGE}' "$light_dockerfile" >/dev/null
+rg -F 'ARG UV_VERSION=0.10.7' "$light_dockerfile" >/dev/null
+rg -F 'PIP_INDEX_URL="https://mirrors.aliyun.com/pypi/simple"' "$light_dockerfile" >/dev/null
+rg -F 'UV_DEFAULT_INDEX="https://mirrors.aliyun.com/pypi/simple"' "$light_dockerfile" >/dev/null
+for package in diffutils gcc gcc-c++ git glibc-devel jq make python3.11; do
+  rg -F "$package" "$light_dockerfile" >/dev/null
+done
+rg -F 'command -v git bash jq gcc g++ make cmp' "$light_dockerfile" >/dev/null
+if rg -n 'postgresql|redis|libreoffice|fontconfig|liberation-fonts|noto.*fonts|^(COPY|ADD)[[:space:]]|uv python install|python3\.10|nodejs' "$light_dockerfile"; then exit 1; fi
+
 rg -F "if: github.actor == 'lilch'" "$workflow" >/dev/null
 rg -F 'runs-on: ubuntu-24.04' "$workflow" >/dev/null
 rg -F 'packages: write' "$workflow" >/dev/null
@@ -46,8 +57,11 @@ yunxiao_build="$repo_root/.ci/yunxiao/build.yml"
 rg -F 'DockerBuildPushACR' "$yunxiao_build" >/dev/null
 rg -F 'e7nmudczyf5buwnz' "$yunxiao_build" >/dev/null
 rg -F 'artifact: runner_image' "$yunxiao_build" >/dev/null
+rg -F 'artifact: runner_light_image' "$yunxiao_build" >/dev/null
 rg -F 'dockerfilePath: Dockerfile' "$yunxiao_build" >/dev/null
+rg -F 'dockerfilePath: Dockerfile.light' "$yunxiao_build" >/dev/null
 rg -F 'crpi-g54lgc6qvbpmokra.cn-hangzhou.personal.cr.aliyuncs.com/cvfast/cvfast-ci-runner' "$yunxiao_build" >/dev/null
 rg -F '${CI_COMMIT_SHA}' "$yunxiao_build" >/dev/null
+rg -F 'light-${CI_COMMIT_SHA}' "$yunxiao_build" >/dev/null
 rg -F 'ALINUX_BASE_IMAGE=alibaba-cloud-linux-3-registry.cn-hangzhou.cr.aliyuncs.com/alinux3/alinux3@sha256:f89f2535f5fa263d951ac91c34bd1b7114ea85e0ee9b54c61832f09ed4e6f314' "$yunxiao_build" >/dev/null
 if rg -n 'release|deploy|production' "$yunxiao_build"; then exit 1; fi

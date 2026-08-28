@@ -1,0 +1,44 @@
+ARG ALINUX_BASE_IMAGE
+FROM ${ALINUX_BASE_IMAGE}
+
+LABEL org.opencontainers.image.source="https://github.com/lilch/cvfast-ci-runner"
+LABEL org.opencontainers.image.description="Public lightweight CVFast PR CI toolchain; no application code or secrets"
+
+ENV PIP_INDEX_URL="https://mirrors.aliyun.com/pypi/simple" \
+    UV_DEFAULT_INDEX="https://mirrors.aliyun.com/pypi/simple"
+
+ARG UV_VERSION=0.10.7
+ARG UV_SHA256=89de2504407dcf04aece914c6ca3b9d8e60cf9ff39a13031c1df1f7c040cea81
+
+RUN dnf install --assumeyes --setopt=install_weak_deps=False \
+      bash \
+      ca-certificates \
+      curl \
+      diffutils \
+      gcc \
+      gcc-c++ \
+      git \
+      glibc-devel \
+      jq \
+      make \
+      python3.11 \
+      tar \
+      unzip \
+      util-linux \
+      xz \
+      zip \
+    && curl --fail --location --retry 3 --silent --show-error \
+      'https://mirrors.aliyun.com/pypi/packages/71/a9/2735cc9dc39457c9cf64d1ce2ba5a9a8ecbb103d0fb64b052bf33ba3d669/uv-0.10.7-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl' \
+      -o /tmp/uv.whl \
+    && echo "${UV_SHA256}  /tmp/uv.whl" | sha256sum --check --strict - \
+    && unzip -j /tmp/uv.whl \
+      uv-0.10.7.data/scripts/uv \
+      uv-0.10.7.data/scripts/uvx \
+      -d /usr/local/bin \
+    && chmod 0755 /usr/local/bin/uv /usr/local/bin/uvx \
+    && rm -f /tmp/uv.whl \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf \
+    && uv --version | grep -Fx "uv ${UV_VERSION}" \
+    && python3.11 -c 'import ssl, sys; assert sys.version_info[:2] == (3, 11); assert ssl.OPENSSL_VERSION' \
+    && command -v git bash jq gcc g++ make cmp >/dev/null

@@ -16,7 +16,7 @@ stages:
     name: Build CI runner image
     jobs:
       build_runner:
-        name: Build and push immutable runner
+        name: Build and push immutable runners
         runsOn:
           group: public/cn-hangzhou
           labels: linux,amd64
@@ -24,6 +24,18 @@ stages:
           instanceType: DEFAULT
         timeoutMinutes: 20
         steps:
+          build_and_push_light:
+            name: Build and push lightweight ACR image
+            step: DockerBuildPushACR
+            with:
+              serviceConnection: e7nmudczyf5buwnz
+              artifact: runner_light_image
+              region: cn-hangzhou
+              dockerRegistry: crpi-g54lgc6qvbpmokra.cn-hangzhou.personal.cr.aliyuncs.com/cvfast/cvfast-ci-runner
+              dockerTag: light-${CI_COMMIT_SHA}
+              dockerfilePath: Dockerfile.light
+              cacheType: remote
+              options: --platform linux/amd64 --provenance=false --build-arg ALINUX_BASE_IMAGE=alibaba-cloud-linux-3-registry.cn-hangzhou.cr.aliyuncs.com/alinux3/alinux3@sha256:f89f2535f5fa263d951ac91c34bd1b7114ea85e0ee9b54c61832f09ed4e6f314
           build_and_push:
             name: Build and push ACR image
             step: DockerBuildPushACR
