@@ -29,8 +29,10 @@ stages:
             step: DockerBuildPushACR
             with:
               serviceConnection: e7nmudczyf5buwnz
+              artifact: runner_image
               region: cn-hangzhou
               dockerRegistry: crpi-g54lgc6qvbpmokra.cn-hangzhou.personal.cr.aliyuncs.com/cvfast/cvfast-ci-runner
               dockerTag: ${CI_COMMIT_SHA}
+              dockerfilePath: Dockerfile
               cacheType: remote
               options: --platform linux/amd64 --provenance=false --build-arg ALINUX_BASE_IMAGE=build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3@sha256:876efc938a207d8d1d0bc1c3305a1d849995ea34a769ef28715f8414dbae7bf1

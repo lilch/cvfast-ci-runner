@@ -43,6 +43,8 @@ if rg -n 'pull_request:|push:|schedule:' "$workflow"; then exit 1; fi
 yunxiao_build="$repo_root/.ci/yunxiao/build.yml"
 rg -F 'DockerBuildPushACR' "$yunxiao_build" >/dev/null
 rg -F 'e7nmudczyf5buwnz' "$yunxiao_build" >/dev/null
+rg -F 'artifact: runner_image' "$yunxiao_build" >/dev/null
+rg -F 'dockerfilePath: Dockerfile' "$yunxiao_build" >/dev/null
 rg -F 'crpi-g54lgc6qvbpmokra.cn-hangzhou.personal.cr.aliyuncs.com/cvfast/cvfast-ci-runner' "$yunxiao_build" >/dev/null
 rg -F '${CI_COMMIT_SHA}' "$yunxiao_build" >/dev/null
 rg -F 'ALINUX_BASE_IMAGE' "$yunxiao_build" >/dev/null
