@@ -1,0 +1,58 @@
+name: Build immutable CI runner
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-ci-runner
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.actor == 'lilch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      RUNNER_IMAGE: ghcr.io/lilch/cvfast-ci-runner:${{ github.sha }}
+      UBUNTU_BASE_IMAGE: ubuntu:24.04@sha256:33ceb71981b602c1a7443a53469e4dba065f7503eab3078a2d7a57a2ab987517
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
+      - name: Build and smoke-test native AMD64 image
+        run: |
+          set -euo pipefail
+          docker build --platform linux/amd64 \
+            --build-arg "UBUNTU_BASE_IMAGE=$UBUNTU_BASE_IMAGE" \
+            --tag "$RUNNER_IMAGE" .
+          docker run --rm --network none --platform linux/amd64 "$RUNNER_IMAGE" \
+            bash -ceu '
+              uv --version | grep -Fx "uv 0.10.7"
+              python3 -c "import sys, ssl; assert sys.version_info[:3] == (3, 10, 19); assert ssl.OPENSSL_VERSION"
+              python3.11 -c "import sys, ssl; assert sys.version_info[:3] == (3, 11, 14); assert ssl.OPENSSL_VERSION"
+              postgres --version | grep -E "^postgres \(PostgreSQL\) 16\."
+              redis-server --version | grep -E "v=7\."
+              command -v initdb pg_ctl psql runuser git bash >/dev/null
+            '
+      - name: Push and prove anonymous immutable pull
+        run: |
+          set -euo pipefail
+          docker push "$RUNNER_IMAGE"
+          # shellcheck disable=SC2016
+          runner_digest="$(docker inspect --format='{{index .RepoDigests 0}}' "$RUNNER_IMAGE")"
+          [[ "$runner_digest" =~ ^ghcr\.io/lilch/cvfast-ci-runner@sha256:[0-9a-f]{64}$ ]]
+          docker logout ghcr.io
+          docker manifest inspect "$runner_digest" >/dev/null
+          printf 'RUNNER_IMAGE=%s\n' "$runner_digest" | tee runner-image-digest.txt
+          printf "### Immutable runner\n\n\`%s\`\n" "$runner_digest" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload immutable digest evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: runner-image-digest
+          path: runner-image-digest.txt
+          retention-days: 90
+          if-no-files-found: error
