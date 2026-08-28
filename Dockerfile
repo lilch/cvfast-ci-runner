@@ -36,6 +36,7 @@ RUN dnf install --assumeyes --setopt=install_weak_deps=False \
       unzip \
       util-linux \
       xz \
+      zsh \
       zip \
     && dnf clean all \
     && rm -rf /var/cache/dnf
@@ -79,4 +80,4 @@ RUN mkdir -p /tmp/rpms \
     && soffice --version >/dev/null \
     && fc-list | grep -F 'Liberation Sans' >/dev/null \
     && fc-list | grep -F 'Noto Sans CJK' >/dev/null \
-    && command -v initdb pg_ctl psql runuser git bash jq gcc g++ make cmp >/dev/null
+    && command -v initdb pg_ctl psql runuser git bash zsh jq gcc g++ make cmp >/dev/null
