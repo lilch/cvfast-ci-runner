@@ -1,0 +1,36 @@
+sources:
+  repo_0:
+    type: githubApp
+    name: cvfast-ci-runner
+    endpoint: https://github.com/lilch/cvfast-ci-runner.git
+    branch: main
+    cloneDepth: '1'
+    certificate:
+      type: serviceConnection
+      serviceConnection: edkujkucu91c8son
+
+defaultWorkspace: repo_0
+
+stages:
+  stage_build:
+    name: Build CI runner image
+    jobs:
+      build_runner:
+        name: Build and push immutable runner
+        runsOn:
+          group: public/cn-hangzhou
+          labels: linux,amd64
+          container: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3@sha256:876efc938a207d8d1d0bc1c3305a1d849995ea34a769ef28715f8414dbae7bf1
+          instanceType: DEFAULT
+        timeoutMinutes: 20
+        steps:
+          build_and_push:
+            name: Build and push ACR image
+            step: DockerBuildPushACR
+            with:
+              serviceConnection: e7nmudczyf5buwnz
+              region: cn-hangzhou
+              dockerRegistry: crpi-g54lgc6qvbpmokra.cn-hangzhou.personal.cr.aliyuncs.com/cvfast/cvfast-ci-runner
+              dockerTag: ${CI_COMMIT_SHA}
+              cacheType: remote
+              options: --platform linux/amd64 --provenance=false --build-arg ALINUX_BASE_IMAGE=build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3@sha256:876efc938a207d8d1d0bc1c3305a1d849995ea34a769ef28715f8414dbae7bf1

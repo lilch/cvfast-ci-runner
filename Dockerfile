@@ -1,56 +1,80 @@
-ARG UBUNTU_BASE_IMAGE
-FROM ${UBUNTU_BASE_IMAGE}
+ARG ALINUX_BASE_IMAGE
+FROM ${ALINUX_BASE_IMAGE}
 
 LABEL org.opencontainers.image.source="https://github.com/lilch/cvfast-ci-runner"
 LABEL org.opencontainers.image.description="Public reproducible CVFast CI toolchain; no application code or secrets"
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PATH="/usr/lib/postgresql/16/bin:${PATH}"
-ENV UV_PYTHON_INSTALL_DIR="/opt/uv-python"
+ENV PATH="/usr/pgsql-16/bin:${PATH}"
 
 ARG UV_VERSION=0.10.7
-ARG UV_SHA256=9ac6cee4e379a5abfca06e78a777b26b7ba1f81cb7935b97054d80d85ac00774
+ARG UV_SHA256=89de2504407dcf04aece914c6ca3b9d8e60cf9ff39a13031c1df1f7c040cea81
+ARG PG_VERSION=16.11-1PGDG.rhel8
+ARG PG_BASE_URL=https://mirrors.aliyun.com/postgresql/repos/yum/16/redhat/rhel-8-x86_64
+ARG REDIS_VERSION=7.2.16-1.module_redis.7.2.el8.remi
+ARG REDIS_BASE_URL=https://mirrors.aliyun.com/remi/enterprise/8/redis72/x86_64
 
-RUN apt-get update \
-    && apt-get install --yes --no-install-recommends \
+RUN dnf install --assumeyes --setopt=install_weak_deps=False \
       bash \
-      build-essential \
       ca-certificates \
       curl \
+      fontconfig \
+      gcc \
+      gcc-c++ \
       git \
+      glibc-devel \
+      google-noto-sans-cjk-ttc-fonts \
       jq \
-      libpq-dev \
-      postgresql-16 \
-      postgresql-client-16 \
-      redis-server \
+      liberation-fonts \
+      libreoffice-core \
+      libreoffice-writer \
+      make \
+      python3.11 \
       tar \
       unzip \
       util-linux \
-      xz-utils \
+      xz \
       zip \
-      zsh \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN curl --fail --location --retry 3 --silent --show-error \
-      "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz" \
-      -o /tmp/uv.tar.gz \
-    && echo "${UV_SHA256}  /tmp/uv.tar.gz" | sha256sum --check --strict - \
-    && tar --extract --gzip --file /tmp/uv.tar.gz --directory /usr/local/bin \
-      --strip-components=1 \
-      uv-x86_64-unknown-linux-gnu/uv \
-      uv-x86_64-unknown-linux-gnu/uvx \
-    && rm -f /tmp/uv.tar.gz \
-    && uv --version | grep -Fx "uv 0.10.7" \
-    && uv python install 3.10.19 3.11.14 \
-    && python310="$(uv python find 3.10.19)" \
-    && python311="$(uv python find 3.11.14)" \
-    && "$python310" -c 'import ssl; assert ssl.OPENSSL_VERSION' \
-    && "$python311" -c 'import ssl; assert ssl.OPENSSL_VERSION' \
-    && ln -sf "$python310" /usr/local/bin/python3 \
-    && ln -sf "$python310" /usr/local/bin/python3.10 \
-    && ln -sf "$python311" /usr/local/bin/python3.11 \
-    && postgres --version | grep -E '^postgres \(PostgreSQL\) 16\.' \
-    && redis-server --version | grep -E 'v=7\.' \
-    && runuser --version >/dev/null \
-    && git --version \
-    && bash --version >/dev/null
+    && mkdir -p /tmp/rpms \
+    && curl --fail --location --retry 3 --silent --show-error \
+      "${PG_BASE_URL}/postgresql16-${PG_VERSION}.x86_64.rpm" \
+      -o "/tmp/rpms/postgresql16-${PG_VERSION}.x86_64.rpm" \
+    && curl --fail --location --retry 3 --silent --show-error \
+      "${PG_BASE_URL}/postgresql16-devel-${PG_VERSION}.x86_64.rpm" \
+      -o "/tmp/rpms/postgresql16-devel-${PG_VERSION}.x86_64.rpm" \
+    && curl --fail --location --retry 3 --silent --show-error \
+      "${PG_BASE_URL}/postgresql16-libs-${PG_VERSION}.x86_64.rpm" \
+      -o "/tmp/rpms/postgresql16-libs-${PG_VERSION}.x86_64.rpm" \
+    && curl --fail --location --retry 3 --silent --show-error \
+      "${PG_BASE_URL}/postgresql16-server-${PG_VERSION}.x86_64.rpm" \
+      -o "/tmp/rpms/postgresql16-server-${PG_VERSION}.x86_64.rpm" \
+    && curl --fail --location --retry 3 --silent --show-error \
+      "${REDIS_BASE_URL}/redis-${REDIS_VERSION}.x86_64.rpm" \
+      -o "/tmp/rpms/redis-${REDIS_VERSION}.x86_64.rpm" \
+    && printf '%s\n' \
+      '702e8c47e8ff4ae09c90ce4b22d96497c5b8a2b07090478601e2f92dc2abef8e  /tmp/rpms/postgresql16-16.11-1PGDG.rhel8.x86_64.rpm' \
+      'ff3e89776b23f93d9c98810858a1c73ced25ffa463033b11c25fd37af751e164  /tmp/rpms/postgresql16-devel-16.11-1PGDG.rhel8.x86_64.rpm' \
+      '277df243b56f513ba310808c33e18444368bea3f427ab55297c16b5d86895994  /tmp/rpms/postgresql16-libs-16.11-1PGDG.rhel8.x86_64.rpm' \
+      'ae13813d3b4d72b258eb43148eec6a054d20df12d2cf80786eabfc7160c02f56  /tmp/rpms/postgresql16-server-16.11-1PGDG.rhel8.x86_64.rpm' \
+      '876cde6ff039dd5c41883fb159dff201fbea1312dedc745cc562e8d0f2a7d95f  /tmp/rpms/redis-7.2.16-1.module_redis.7.2.el8.remi.x86_64.rpm' \
+      | sha256sum --check --strict - \
+    && dnf install --assumeyes --setopt=install_weak_deps=False /tmp/rpms/*.rpm \
+    && curl --fail --location --retry 3 --silent --show-error \
+      'https://mirrors.aliyun.com/pypi/packages/71/a9/2735cc9dc39457c9cf64d1ce2ba5a9a8ecbb103d0fb64b052bf33ba3d669/uv-0.10.7-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl' \
+      -o /tmp/uv.whl \
+    && echo "${UV_SHA256}  /tmp/uv.whl" | sha256sum --check --strict - \
+    && unzip -j /tmp/uv.whl \
+      uv-0.10.7.data/scripts/uv \
+      uv-0.10.7.data/scripts/uvx \
+      -d /usr/local/bin \
+    && chmod 0755 /usr/local/bin/uv /usr/local/bin/uvx \
+    && rm -rf /tmp/rpms /tmp/uv.whl \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf \
+    && uv --version | grep -Fx "uv ${UV_VERSION}" \
+    && python3.11 -c 'import ssl, sys; assert sys.version_info[:2] == (3, 11); assert ssl.OPENSSL_VERSION' \
+    && postgres --version | grep -Fx "postgres (PostgreSQL) 16.11" \
+    && redis-server --version | grep -F "v=7.2.16" \
+    && soffice --version >/dev/null \
+    && fc-list | grep -F 'Liberation Sans' >/dev/null \
+    && fc-list | grep -F 'Noto Sans CJK' >/dev/null \
+    && command -v initdb pg_ctl psql runuser git bash jq gcc g++ make >/dev/null

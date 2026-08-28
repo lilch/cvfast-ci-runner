@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 15
     env:
       RUNNER_IMAGE: ghcr.io/lilch/cvfast-ci-runner:${{ github.sha }}
-      UBUNTU_BASE_IMAGE: ubuntu:24.04@sha256:33ceb71981b602c1a7443a53469e4dba065f7503eab3078a2d7a57a2ab987517
+      ALINUX_BASE_IMAGE: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3@sha256:876efc938a207d8d1d0bc1c3305a1d849995ea34a769ef28715f8414dbae7bf1
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Log in to GitHub Container Registry
@@ -27,16 +27,18 @@ jobs:
         run: |
           set -euo pipefail
           docker build --platform linux/amd64 \
-            --build-arg "UBUNTU_BASE_IMAGE=$UBUNTU_BASE_IMAGE" \
+            --build-arg "ALINUX_BASE_IMAGE=$ALINUX_BASE_IMAGE" \
             --tag "$RUNNER_IMAGE" .
           docker run --rm --network none --platform linux/amd64 "$RUNNER_IMAGE" \
             bash -ceu '
               uv --version | grep -Fx "uv 0.10.7"
-              python3 -c "import sys, ssl; assert sys.version_info[:3] == (3, 10, 19); assert ssl.OPENSSL_VERSION"
-              python3.11 -c "import sys, ssl; assert sys.version_info[:3] == (3, 11, 14); assert ssl.OPENSSL_VERSION"
-              postgres --version | grep -E "^postgres \(PostgreSQL\) 16\."
-              redis-server --version | grep -E "v=7\."
-              command -v initdb pg_ctl psql runuser git bash >/dev/null
+              python3.11 -c "import ssl, sys; assert sys.version_info[:2] == (3, 11); assert ssl.OPENSSL_VERSION"
+              postgres --version | grep -Fx "postgres (PostgreSQL) 16.11"
+              redis-server --version | grep -F "v=7.2.16"
+              soffice --version >/dev/null
+              fc-list | grep -F "Liberation Sans" >/dev/null
+              fc-list | grep -F "Noto Sans CJK" >/dev/null
+              command -v initdb pg_ctl psql runuser git bash jq gcc g++ make >/dev/null
             '
       - name: Push and prove anonymous immutable pull
         run: |
