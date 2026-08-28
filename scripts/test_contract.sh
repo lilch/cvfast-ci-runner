@@ -23,10 +23,10 @@ rg -F 'postgresql16-server-16.11-1PGDG.rhel8.x86_64.rpm' "$dockerfile" >/dev/nul
 rg -F 'ae13813d3b4d72b258eb43148eec6a054d20df12d2cf80786eabfc7160c02f56' "$dockerfile" >/dev/null
 rg -F 'redis-7.2.16-1.module_redis.7.2.el8.remi.x86_64.rpm' "$dockerfile" >/dev/null
 rg -F '876cde6ff039dd5c41883fb159dff201fbea1312dedc745cc562e8d0f2a7d95f' "$dockerfile" >/dev/null
-for package in diffutils fontconfig liberation-fonts google-noto-sans-cjk-ttc-fonts libreoffice-core libreoffice-writer; do
+for package in diffutils fontconfig liberation-fonts google-noto-sans-cjk-ttc-fonts libreoffice-core libreoffice-writer zsh; do
   rg -F "$package" "$dockerfile" >/dev/null
 done
-rg -F 'command -v initdb pg_ctl psql runuser git bash jq gcc g++ make cmp' "$dockerfile" >/dev/null
+rg -F 'command -v initdb pg_ctl psql runuser git bash zsh jq gcc g++ make cmp' "$dockerfile" >/dev/null
 rg -F 'fc-list' "$dockerfile" >/dev/null
 rg -F 'soffice --version' "$dockerfile" >/dev/null
 rg -F 'postgres --version | grep -Fx "postgres (PostgreSQL) 16.11"' "$dockerfile" >/dev/null
