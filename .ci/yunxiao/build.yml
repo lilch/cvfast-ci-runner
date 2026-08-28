@@ -35,4 +35,4 @@ stages:
               dockerTag: ${CI_COMMIT_SHA}
               dockerfilePath: Dockerfile
               cacheType: remote
-              options: --platform linux/amd64 --provenance=false --build-arg ALINUX_BASE_IMAGE=build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3@sha256:876efc938a207d8d1d0bc1c3305a1d849995ea34a769ef28715f8414dbae7bf1
+              options: --platform linux/amd64 --provenance=false --build-arg ALINUX_BASE_IMAGE=alibaba-cloud-linux-3-registry.cn-hangzhou.cr.aliyuncs.com/alinux3/alinux3@sha256:f89f2535f5fa263d951ac91c34bd1b7114ea85e0ee9b54c61832f09ed4e6f314

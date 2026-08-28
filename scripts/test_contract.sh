@@ -33,7 +33,7 @@ if rg -n '^(COPY|ADD)[[:space:]]|astral\.sh/.*/install\.sh|[|][[:space:]]*sh([[:
 rg -F "if: github.actor == 'lilch'" "$workflow" >/dev/null
 rg -F 'runs-on: ubuntu-24.04' "$workflow" >/dev/null
 rg -F 'packages: write' "$workflow" >/dev/null
-rg -F 'ALINUX_BASE_IMAGE:' "$workflow" >/dev/null
+rg -F 'ALINUX_BASE_IMAGE: alibaba-cloud-linux-3-registry.cn-hangzhou.cr.aliyuncs.com/alinux3/alinux3@sha256:f89f2535f5fa263d951ac91c34bd1b7114ea85e0ee9b54c61832f09ed4e6f314' "$workflow" >/dev/null
 rg -F 'docker build --platform linux/amd64' "$workflow" >/dev/null
 rg -F 'docker run --rm --network none --platform linux/amd64' "$workflow" >/dev/null
 rg -F 'docker logout ghcr.io' "$workflow" >/dev/null
@@ -47,5 +47,5 @@ rg -F 'artifact: runner_image' "$yunxiao_build" >/dev/null
 rg -F 'dockerfilePath: Dockerfile' "$yunxiao_build" >/dev/null
 rg -F 'crpi-g54lgc6qvbpmokra.cn-hangzhou.personal.cr.aliyuncs.com/cvfast/cvfast-ci-runner' "$yunxiao_build" >/dev/null
 rg -F '${CI_COMMIT_SHA}' "$yunxiao_build" >/dev/null
-rg -F 'ALINUX_BASE_IMAGE' "$yunxiao_build" >/dev/null
+rg -F 'ALINUX_BASE_IMAGE=alibaba-cloud-linux-3-registry.cn-hangzhou.cr.aliyuncs.com/alinux3/alinux3@sha256:f89f2535f5fa263d951ac91c34bd1b7114ea85e0ee9b54c61832f09ed4e6f314' "$yunxiao_build" >/dev/null
 if rg -n 'release|deploy|production' "$yunxiao_build"; then exit 1; fi
