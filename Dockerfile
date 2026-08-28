@@ -17,6 +17,7 @@ RUN dnf install --assumeyes --setopt=install_weak_deps=False \
       bash \
       ca-certificates \
       curl \
+      diffutils \
       fontconfig \
       gcc \
       gcc-c++ \
@@ -76,4 +77,4 @@ RUN mkdir -p /tmp/rpms \
     && soffice --version >/dev/null \
     && fc-list | grep -F 'Liberation Sans' >/dev/null \
     && fc-list | grep -F 'Noto Sans CJK' >/dev/null \
-    && command -v initdb pg_ctl psql runuser git bash jq gcc g++ make >/dev/null
+    && command -v initdb pg_ctl psql runuser git bash jq gcc g++ make cmp >/dev/null
